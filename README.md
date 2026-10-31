@@ -82,6 +82,23 @@ npm run typecheck && npm run lint
 TEST_MONGODB_URI=mongodb://127.0.0.1:27017 npm test   # JWT tests run without a database
 ```
 
+## Demo data (seed)
+
+An empty database shows empty pages. To load 15 realistic demo books (3 per category) with
+public Open Library cover URLs:
+
+```bash
+npm run seed                    # inserts only the books that are missing
+npm run seed -- --dry-run       # preview, writes nothing
+npm run seed -- --check-covers  # also test that every cover URL is reachable
+SEED_OWNER_EMAIL=you@example.com npm run seed   # own the books as a registered user
+```
+
+It reads the same `.env` as the server, writes only to `books`, never touches users, sessions or
+borrows, and is safe to re-run (existing or edited books are left alone). By default the books
+belong to a neutral "BookNook Library" owner, so nobody can edit or delete them; set
+`SEED_OWNER_EMAIL` to a registered account to manage them from My Books.
+
 ## Deployment (Render)
 
 1. New Web Service from this repo (`render.yaml` is included): build `npm ci && npm run build`,
