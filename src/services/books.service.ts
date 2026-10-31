@@ -1,4 +1,4 @@
-import type { Filter, ObjectId } from "mongodb";
+import type { Filter, ObjectId, Sort } from "mongodb";
 import { books, borrows } from "../config/db";
 import type { AuthUser, BookDoc } from "../types";
 import { conflict, forbidden, notFound } from "../utils/http";
@@ -7,19 +7,20 @@ import type { createBookSchema, listBooksQuerySchema, updateBookSchema } from ".
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-export async function listBooks(query: z.infer<typeof listBooksQuerySchema>) {
+export async function listBooks(query: z.infer<typeof listBooksQuerySchema>, ownerId?: string) {
   const filter: Filter<BookDoc> = {};
+  if (ownerId) filter.addedByUserId = ownerId;
   if (query.category) filter.category = query.category;
   if (query.q) {
     const rx = new RegExp(escapeRegex(query.q), "i");
     filter.$or = [{ title: rx }, { author: rx }];
   }
-  const sort =
+  const sort: Sort =
     query.sort === "oldest"
-      ? { addedAt: 1 as const, _id: 1 as const }
+      ? { addedAt: 1, _id: 1 }
       : query.sort === "title"
-        ? { title: 1 as const, _id: 1 as const }
-        : { addedAt: -1 as const, _id: -1 as const };
+        ? { title: 1, _id: 1 }
+        : { addedAt: -1, _id: -1 };
 
   const [items, total] = await Promise.all([
     books()
@@ -46,10 +47,6 @@ export async function getBook(id: ObjectId) {
   const book = await books().findOne({ _id: id });
   if (!book) throw notFound("Book not found");
   return book;
-}
-
-export async function listBooksByOwner(userId: string) {
-  return books().find({ addedByUserId: userId }).sort({ addedAt: -1, _id: -1 }).toArray();
 }
 
 export async function createBook(user: AuthUser, input: z.infer<typeof createBookSchema>) {

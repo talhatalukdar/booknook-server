@@ -35,6 +35,8 @@ export const listBooksQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
   category: z.enum(CATEGORIES).optional(),
   sort: z.enum(["newest", "oldest", "title"]).default("newest"),
+  // mine=true returns only the authenticated user's books (requires a valid JWT)
+  mine: z.enum(["true", "false"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });
