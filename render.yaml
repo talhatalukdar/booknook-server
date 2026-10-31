@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: booknook-server
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: DB_NAME
+        value: booknook
+      - key: CLIENT_URL
+        sync: false
+      - key: BETTER_AUTH_URL
+        sync: false
